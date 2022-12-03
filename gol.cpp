@@ -10,7 +10,7 @@ int main(int argc, char **argv)
     }
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        printf("Error @ SDL2 initialization: %s\n", SDL_GetError());
+        printf("Error @ SDL2 initialization: %s.\n", SDL_GetError());
         return 1;
     }
 
@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 
     SDL_Surface *image = IMG_Load(argv[1]);
     if (nullptr == image) {
-        printf("Error @ loading image: %s\n", IMG_GetError());
+        printf("Error @ loading image: %s.\n", IMG_GetError());
         return 1;
     }
 
