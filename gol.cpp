@@ -45,6 +45,7 @@ int main(int argc, char **argv)
 
     bool quit = false;
     SDL_Event event;
+    SDL_Rect rect{0, 0, image->w, image->h};
 
     while(!quit) {
         SDL_RenderClear(renderer);
@@ -57,7 +58,7 @@ int main(int argc, char **argv)
                 break;
         }
 
-        SDL_RenderCopy(renderer, texture, nullptr, nullptr);
+        SDL_RenderCopy(renderer, texture, nullptr, &rect);
         SDL_RenderPresent(renderer);
     }
 
