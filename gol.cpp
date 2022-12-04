@@ -56,6 +56,25 @@ int main(int argc, char **argv)
             case SDL_QUIT:
                 quit = true;
                 break;
+            case SDL_KEYDOWN:
+                switch(event.key.keysym.sym) {
+                    case SDLK_ESCAPE:
+                        quit = true;
+                        break;
+                    case SDLK_LEFT:
+                        rect.x -= 10;
+                        break;
+                    case SDLK_RIGHT:
+                        rect.x += 10;
+                        break;
+                    case SDLK_DOWN:
+                        rect.y += 10;
+                        break;
+                    case SDLK_UP:
+                        rect.y -= 10;
+                        break;
+                }
+                break;
         }
 
         SDL_RenderCopy(renderer, texture, nullptr, &rect);
