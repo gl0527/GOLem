@@ -15,19 +15,19 @@ int main(int argc, char **argv)
     }
 
     if (0 == IMG_Init(IMG_INIT_JPG)) {
-        printf("Error @ SDL2_Image initialization.\n");
+        printf("Error @ SDL2_Image initialization: %s.\n", IMG_GetError());
         return 1;
     }
 
     SDL_Window *window = SDL_CreateWindow("Empty Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
     if (nullptr == window) {
-        printf("Error @ window creation.\n");
+        printf("Error @ window creation: %s.\n", SDL_GetError());
         return 1;
     }
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
     if (nullptr == renderer) {
-        printf("Error @ renderer creation.\n");
+        printf("Error @ renderer creation: %s.\n", SDL_GetError());
         return 1;
     }
 
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, image);
     if (nullptr == texture) {
-        printf("Error @ creating texture.\n");
+        printf("Error @ creating texture: %s.\n", SDL_GetError());
         return 1;
     }
 
