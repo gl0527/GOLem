@@ -1,4 +1,6 @@
-#include <cstdio>
+#include <stdbool.h>
+#include <stdio.h>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
@@ -20,32 +22,32 @@ int main(int argc, char **argv)
     }
 
     SDL_Window *window = SDL_CreateWindow("Empty Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
-    if (nullptr == window) {
+    if (NULL == window) {
         fprintf(stderr, "Error @ window creation: %s.\n", SDL_GetError());
         return 1;
     }
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
-    if (nullptr == renderer) {
+    if (NULL == renderer) {
         fprintf(stderr, "Error @ renderer creation: %s.\n", SDL_GetError());
         return 1;
     }
 
     SDL_Surface *image = IMG_Load(argv[1]);
-    if (nullptr == image) {
+    if (NULL == image) {
         fprintf(stderr, "Error @ loading image: %s.\n", IMG_GetError());
         return 1;
     }
 
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, image);
-    if (nullptr == texture) {
+    if (NULL == texture) {
         fprintf(stderr, "Error @ creating texture: %s.\n", SDL_GetError());
         return 1;
     }
 
     bool quit = false;
     SDL_Event event;
-    SDL_Rect rect{0, 0, image->w, image->h};
+    SDL_Rect rect = {0, 0, image->w, image->h};
 
     while(!quit) {
         SDL_RenderClear(renderer);
@@ -77,7 +79,7 @@ int main(int argc, char **argv)
                 break;
         }
 
-        SDL_RenderCopy(renderer, texture, nullptr, &rect);
+        SDL_RenderCopy(renderer, texture, NULL, &rect);
         SDL_RenderPresent(renderer);
     }
 
