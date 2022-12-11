@@ -4,6 +4,46 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+typedef struct {
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+} App;
+
+bool CreateApp(char const *title, int width, int height, App *outApp)
+{
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        fprintf(stderr, "%s(%d):\tError @ SDL2 initialization: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        return false;
+    }
+
+    if (0 == IMG_Init(IMG_INIT_JPG)) {
+        fprintf(stderr, "%s(%d):\tError @ SDL2_Image initialization: %s.\n", __FILE__, __LINE__, IMG_GetError());
+        return false;
+    }
+
+    outApp->window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
+    if (NULL == outApp->window) {
+        fprintf(stderr, "%s(%d):\tError @ window creation: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        return false;
+    }
+
+    outApp->renderer = SDL_CreateRenderer(outApp->window, -1, 0);
+    if (NULL == outApp->renderer) {
+        fprintf(stderr, "%s(%d):\tError @ renderer creation: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        return false;
+    }
+
+    return true;
+}
+
+void DestroyApp(App *app)
+{
+    SDL_DestroyRenderer(app->renderer);
+    SDL_DestroyWindow(app->window);
+    IMG_Quit();
+    SDL_Quit();
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -11,37 +51,21 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        fprintf(stderr, "Error @ SDL2 initialization: %s.\n", SDL_GetError());
-        return 1;
-    }
+    App app;
 
-    if (0 == IMG_Init(IMG_INIT_JPG)) {
-        fprintf(stderr, "Error @ SDL2_Image initialization: %s.\n", IMG_GetError());
-        return 1;
-    }
-
-    SDL_Window *window = SDL_CreateWindow("Empty Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
-    if (NULL == window) {
-        fprintf(stderr, "Error @ window creation: %s.\n", SDL_GetError());
-        return 1;
-    }
-
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
-    if (NULL == renderer) {
-        fprintf(stderr, "Error @ renderer creation: %s.\n", SDL_GetError());
+    if (!CreateApp("Game of Life", 640, 480, &app)) {
         return 1;
     }
 
     SDL_Surface *image = IMG_Load(argv[1]);
     if (NULL == image) {
-        fprintf(stderr, "Error @ loading image: %s.\n", IMG_GetError());
+        fprintf(stderr, "%s(%d):\tError @ loading image: %s.\n", __FILE__, __LINE__, IMG_GetError());
         return 1;
     }
 
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, image);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(app.renderer, image);
     if (NULL == texture) {
-        fprintf(stderr, "Error @ creating texture: %s.\n", SDL_GetError());
+        fprintf(stderr, "%s(%d):\tError @ creating texture: %s.\n", __FILE__, __LINE__, SDL_GetError());
         return 1;
     }
 
@@ -50,7 +74,7 @@ int main(int argc, char **argv)
     SDL_Rect rect = {0, 0, image->w, image->h};
 
     while(!quit) {
-        SDL_RenderClear(renderer);
+        SDL_RenderClear(app.renderer);
 
         SDL_WaitEvent(&event);
 
@@ -79,16 +103,13 @@ int main(int argc, char **argv)
                 break;
         }
 
-        SDL_RenderCopy(renderer, texture, NULL, &rect);
-        SDL_RenderPresent(renderer);
+        SDL_RenderCopy(app.renderer, texture, NULL, &rect);
+        SDL_RenderPresent(app.renderer);
     }
 
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(image);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    IMG_Quit();
-    SDL_Quit();
+    DestroyApp(&app);
 
     return 0;
 }
