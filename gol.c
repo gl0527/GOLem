@@ -61,6 +61,32 @@ bool IsAlive(SDL_Surface *const image, int x, int y)
     return *pixel_address > 127;
 }
 
+uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
+{
+    int const w = image->w;
+    int const h = image->h;
+
+    int const y_min = (y - 1 + h) % h;
+    int const y_max = (y + 1) % h;
+    int const x_min = (x - 1 + w) % w;
+    int const x_max = (x + 1) % w;
+
+    uint8_t sum = 0;
+
+    for (int r = y_min; r <= y_max; ++r) {
+        for (int c = x_min; c <= x_max; ++c) {
+            if (c == x && r == y) {
+                continue;
+            }
+            if (IsAlive(image, c, r)) {
+                sum += 1;
+            }
+        }
+    }
+
+    return sum;
+}
+
 bool SetSurfacePixel(SDL_Surface *const image, int x, int y, int color)
 {
     if (x < 0 || x > image->w) {
