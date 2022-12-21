@@ -44,6 +44,23 @@ void DestroyApp(App *app)
     SDL_Quit();
 }
 
+bool IsAlive(SDL_Surface *const image, int x, int y)
+{
+    if (x < 0 || x > image->w) {
+        fprintf(stderr, "%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);
+        return false;
+    }
+    if (y < 0 || y > image->h) {
+        fprintf(stderr, "%s(%d):\tVertical index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->h);
+        return false;
+    }
+
+    uint8_t const bytes_per_pixel = image->format->BytesPerPixel;
+    uint8_t *const pixel_address = (uint8_t*)(image->pixels) + image->pitch * y + x * bytes_per_pixel;
+
+    return *pixel_address > 127;
+}
+
 bool SetSurfacePixel(SDL_Surface *const image, int x, int y, int color)
 {
     if (x < 0 || x > image->w) {
