@@ -4,6 +4,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
+#define MIN(i,j) (((i) < (j)) ? (i) : (j))
+#define MAX(i,j) (((i) > (j)) ? (i) : (j))
+
 typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -63,24 +66,28 @@ bool IsAlive(SDL_Surface *const image, int x, int y)
 
 uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
 {
-    int const w = image->w;
-    int const h = image->h;
+    if (x < 0 || x > image->w) {
+        fprintf(stderr, "%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);
+        return false;
+    }
+    if (y < 0 || y > image->h) {
+        fprintf(stderr, "%s(%d):\tVertical index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->h);
+        return false;
+    }
 
-    int const y_min = (y - 1 + h) % h;
-    int const y_max = (y + 1) % h;
-    int const x_min = (x - 1 + w) % w;
-    int const x_max = (x + 1) % w;
+    int const y_min = MAX(y - 1, 0);
+    int const y_max = MIN(y + 1, image->h - 1);
+    int const x_min = MAX(x - 1, 0);
+    int const x_max = MIN(x + 1, image->w - 1);
 
     uint8_t sum = 0;
 
     for (int r = y_min; r <= y_max; ++r) {
         for (int c = x_min; c <= x_max; ++c) {
-            if (c == x && r == y) {
+            if (r == y && c == x) {
                 continue;
             }
-            if (IsAlive(image, c, r)) {
-                sum += 1;
-            }
+            sum += IsAlive(image, c, r) ? 1 : 0;
         }
     }
 
