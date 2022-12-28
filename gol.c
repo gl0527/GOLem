@@ -144,6 +144,19 @@ bool Step(SDL_Surface *const src, SDL_Surface *const dst, uint8_t stay_alive_min
     return true;
 }
 
+void Binarize(SDL_Surface *const image)
+{
+    for (int y = 0; y < image->h; ++y) {
+        for (int x = 0; x < image->w; ++x) {
+            if (IsAlive(image, x, y)) {
+                SetSurfacePixel(image, x, y, 0xFF);
+            } else {
+                SetSurfacePixel(image, x, y, 0x12);
+            }
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -162,6 +175,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "%s(%d):\tError @ loading image: %s.\n", __FILE__, __LINE__, IMG_GetError());
         return 1;
     }
+
+    Binarize(src);
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     uint32_t rmask = 0xFF000000;
