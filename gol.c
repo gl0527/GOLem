@@ -157,25 +157,35 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    SDL_Surface *image = IMG_Load(argv[1]);
-    if (NULL == image) {
+    SDL_Surface *src = IMG_Load(argv[1]);
+    if (NULL == src) {
         fprintf(stderr, "%s(%d):\tError @ loading image: %s.\n", __FILE__, __LINE__, IMG_GetError());
         return 1;
     }
 
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(app.renderer, image);
-    if (NULL == texture) {
-        fprintf(stderr, "%s(%d):\tError @ creating texture: %s.\n", __FILE__, __LINE__, SDL_GetError());
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    uint32_t rmask = 0xFF000000;
+    uint32_t gmask = 0x00FF0000;
+    uint32_t bmask = 0x0000FF00;
+    uint32_t amask = 0x000000FF;
+#else
+    uint32_t rmask = 0x000000FF;
+    uint32_t gmask = 0x0000FF00;
+    uint32_t bmask = 0x00FF0000;
+    uint32_t amask = 0xFF000000;
+#endif
+
+    SDL_Surface *dst = SDL_CreateRGBSurface(SDL_SWSURFACE, src->w, src->h, src->format->BitsPerPixel, rmask, gmask, bmask, amask);
+    if (NULL == dst) {
+        fprintf(stderr, "%s(%d):\tError @ creating image: %s.\n", __FILE__, __LINE__, SDL_GetError());
         return 1;
     }
 
     bool quit = false;
     SDL_Event event;
-    SDL_Rect rect = {0, 0, image->w, image->h};
+    SDL_Rect rect = {0, 0, src->w, src->h};
 
     while(!quit) {
-        SDL_RenderClear(app.renderer);
-
         while(SDL_PollEvent(&event) != 0) {
             switch(event.type) {
                 case SDL_QUIT:
@@ -203,14 +213,31 @@ int main(int argc, char **argv)
             }
         }
 
+        if (!Step(src, dst, 2, 3, 3)) {
+            break;
+        }
+
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(app.renderer, dst);
+        if (NULL == texture) {
+            fprintf(stderr, "%s(%d):\tError @ creating texture: %s.\n", __FILE__, __LINE__, SDL_GetError());
+            break;
+        }
+
         SDL_RenderCopy(app.renderer, texture, NULL, &rect);
         SDL_RenderPresent(app.renderer);
+        SDL_RenderClear(app.renderer);
+
+        SDL_DestroyTexture(texture);
+
+        SDL_Surface *tmp = src;
+        src = dst;
+        dst = tmp;
 
         SDL_Delay(20);
     }
 
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(image);
+    SDL_FreeSurface(dst);
+    SDL_FreeSurface(src);
     DestroyApp(&app);
 
     return 0;
