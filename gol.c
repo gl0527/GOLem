@@ -115,6 +115,35 @@ bool SetSurfacePixel(SDL_Surface *const image, int x, int y, int color)
     return true;
 }
 
+bool Step(SDL_Surface *const src, SDL_Surface *const dst, uint8_t stay_alive_min, uint8_t stay_alive_max, uint8_t birth_threshold)
+{
+    if (src->w != dst->w || src->h != dst->h) {
+        fprintf(stderr, "%s(%d):\tSurface dimensions do not match.\n", __FILE__, __LINE__);
+        return false;
+    }
+    if (SDL_BlitSurface(src, NULL, dst, NULL) != 0) {
+        fprintf(stderr, "%s(%d):\tError @ copying surface: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        return false;
+    }
+
+    for (int y = 0; y < src->h; ++y) {
+        for (int x = 0; x < src->w; ++x) {
+            uint8_t const alive_neighbors = GetAliveNeighborCount(src, x, y);
+            if (IsAlive(src, x, y) && (alive_neighbors < stay_alive_min || alive_neighbors > stay_alive_max)) {
+                if (!SetSurfacePixel(dst, x, y, 0x12)) {
+                    return false;
+                }
+            } else if (!IsAlive(src, x, y) && alive_neighbors == birth_threshold) {
+                if (!SetSurfacePixel(dst, x, y, 0xFF)) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
