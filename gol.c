@@ -108,9 +108,13 @@ bool SetSurfacePixel(SDL_Surface *const image, int x, int y, int color)
     uint8_t const bytes_per_pixel = image->format->BytesPerPixel;
     uint8_t *const pixel_address = (uint8_t*)(image->pixels) + image->pitch * y + x * bytes_per_pixel;
 
-    SDL_LockSurface(image);
-    SDL_memset(pixel_address, color, bytes_per_pixel);
-    SDL_UnlockSurface(image);
+    if (SDL_MUSTLOCK(image)) {
+        SDL_LockSurface(image);
+        SDL_memset(pixel_address, color, bytes_per_pixel);
+        SDL_UnlockSurface(image);
+    } else {
+        SDL_memset(pixel_address, color, bytes_per_pixel);
+    }
 
     return true;
 }
