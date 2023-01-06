@@ -8,6 +8,17 @@
 #define MAX(i,j) (((i) > (j)) ? (i) : (j))
 
 typedef struct {
+    uint8_t stay_alive_min;
+    uint8_t stay_alive_max;
+    uint8_t birth_threshold;
+} Rules;
+
+typedef struct {
+    uint32_t alive;
+    uint32_t dead;
+} Colors;
+
+typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
 } App;
@@ -122,7 +133,7 @@ bool SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
     return true;
 }
 
-bool Step(SDL_Surface *const src, SDL_Surface *const dst, uint8_t stay_alive_min, uint8_t stay_alive_max, uint8_t birth_threshold)
+bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const colors, Rules const *const rules)
 {
     if (src->w != dst->w || src->h != dst->h) {
         fprintf(stderr, "%s(%d):\tSurface dimensions do not match.\n", __FILE__, __LINE__);
@@ -136,12 +147,12 @@ bool Step(SDL_Surface *const src, SDL_Surface *const dst, uint8_t stay_alive_min
     for (int y = 0; y < src->h; ++y) {
         for (int x = 0; x < src->w; ++x) {
             uint8_t const alive_neighbors = GetAliveNeighborCount(src, x, y);
-            if (IsAlive(src, x, y) && (alive_neighbors < stay_alive_min || alive_neighbors > stay_alive_max)) {
-                if (!SetSurfacePixel(dst, x, y, 0x12)) {
+            if (IsAlive(src, x, y) && (alive_neighbors < rules->stay_alive_min || alive_neighbors > rules->stay_alive_max)) {
+                if (!SetSurfacePixel(dst, x, y, colors->dead)) {
                     return false;
                 }
-            } else if (!IsAlive(src, x, y) && alive_neighbors == birth_threshold) {
-                if (!SetSurfacePixel(dst, x, y, 0xFF)) {
+            } else if (!IsAlive(src, x, y) && alive_neighbors == rules->birth_threshold) {
+                if (!SetSurfacePixel(dst, x, y, colors->alive)) {
                     return false;
                 }
             }
@@ -151,14 +162,14 @@ bool Step(SDL_Surface *const src, SDL_Surface *const dst, uint8_t stay_alive_min
     return true;
 }
 
-void Binarize(SDL_Surface *const image)
+void Binarize(SDL_Surface *const image, Colors const *const colors)
 {
     for (int y = 0; y < image->h; ++y) {
         for (int x = 0; x < image->w; ++x) {
             if (IsAlive(image, x, y)) {
-                SetSurfacePixel(image, x, y, 0xFF);
+                SetSurfacePixel(image, x, y, colors->alive);
             } else {
-                SetSurfacePixel(image, x, y, 0x12);
+                SetSurfacePixel(image, x, y, colors->dead);
             }
         }
     }
@@ -189,7 +200,9 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    Binarize(src);
+    Colors colors = { .alive = 0xFF00FFFF, .dead = 0x000032FF };
+
+    Binarize(src, &colors);
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     uint32_t rmask = 0xFF000000;
@@ -212,6 +225,7 @@ int main(int argc, char **argv)
     bool quit = false;
     SDL_Event event;
     SDL_Rect rect = {0, 0, src->w, src->h};
+    Rules rules = { .stay_alive_min = 2, .stay_alive_max = 3, .birth_threshold = 3 };
 
     while(!quit) {
         while(SDL_PollEvent(&event) != 0) {
@@ -241,7 +255,7 @@ int main(int argc, char **argv)
             }
         }
 
-        if (!Step(src, dst, 2, 3, 3)) {
+        if (!Step(src, dst, &colors, &rules)) {
             break;
         }
 
