@@ -94,7 +94,7 @@ uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
     return sum;
 }
 
-bool SetSurfacePixel(SDL_Surface *const image, int x, int y, int color)
+bool SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
 {
     if (x < 0 || x > image->w) {
         fprintf(stderr, "%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);
@@ -108,8 +108,15 @@ bool SetSurfacePixel(SDL_Surface *const image, int x, int y, int color)
     uint8_t const bytes_per_pixel = image->format->BytesPerPixel;
     uint8_t *const pixel_address = (uint8_t*)(image->pixels) + image->pitch * y + x * bytes_per_pixel;
 
+    uint8_t const r = (color & 0xFF000000) >> 24;
+    uint8_t const g = (color & 0x00FF0000) >> 16;
+    uint8_t const b = (color & 0x0000FF00) >> 8;
+    uint8_t const a = (color & 0x000000FF);
+
+    uint32_t const real_color = SDL_MapRGBA(image->format, r, g, b, a);
+
     SDL_LockSurface(image);
-    SDL_memset(pixel_address, color, bytes_per_pixel);
+    SDL_memset4(pixel_address, real_color, bytes_per_pixel / 4);
     SDL_UnlockSurface(image);
 
     return true;
@@ -173,6 +180,12 @@ int main(int argc, char **argv)
     SDL_Surface *src = IMG_Load(argv[1]);
     if (NULL == src) {
         fprintf(stderr, "%s(%d):\tError @ loading image: %s.\n", __FILE__, __LINE__, IMG_GetError());
+        return 1;
+    }
+
+    uint8_t const bits_per_pixel = src->format->BitsPerPixel;
+    if (bits_per_pixel != 32) {
+        fprintf(stderr, "%s(%d):\tWrong image format: %d bits per pixel instead of 32.\n", __FILE__, __LINE__, bits_per_pixel);
         return 1;
     }
 
