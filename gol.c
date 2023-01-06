@@ -222,6 +222,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(app.renderer, src);
+    if (NULL == texture) {
+        fprintf(stderr, "%s(%d):\tError @ creating texture: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        return 1;
+    }
+
     bool quit = false;
     SDL_Event event;
     SDL_Rect rect = {0, 0, src->w, src->h};
@@ -259,17 +265,11 @@ int main(int argc, char **argv)
             break;
         }
 
-        SDL_Texture *texture = SDL_CreateTextureFromSurface(app.renderer, dst);
-        if (NULL == texture) {
-            fprintf(stderr, "%s(%d):\tError @ creating texture: %s.\n", __FILE__, __LINE__, SDL_GetError());
-            break;
-        }
+        SDL_UpdateTexture(texture, NULL, src->pixels, src->pitch);
 
         SDL_RenderCopy(app.renderer, texture, NULL, &rect);
         SDL_RenderPresent(app.renderer);
         SDL_RenderClear(app.renderer);
-
-        SDL_DestroyTexture(texture);
 
         SDL_Surface *tmp = src;
         src = dst;
@@ -277,6 +277,7 @@ int main(int argc, char **argv)
 
         SDL_Delay(20);
     }
+    SDL_DestroyTexture(texture);
 
     SDL_FreeSurface(dst);
     SDL_FreeSurface(src);
