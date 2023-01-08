@@ -5,10 +5,13 @@ SDL2_LIBS=$(shell echo $$(sdl2-config --libs)) -lSDL2_image
 
 .PHONY: all clean
 
-all: gol
+all: gol_dbg gol_rel
 
-gol: gol.c
-	$(CC) gol.c $(CFLAGS) $(SDL2_CFLAGS) $(SDL2_LIBS) -o gol
+gol_dbg: gol.c
+	$(CC) gol.c $(CFLAGS) $(SDL2_CFLAGS) $(SDL2_LIBS) -O0 -g -o gol_dbg
+
+gol_rel: gol.c
+	$(CC) gol.c $(CFLAGS) $(SDL2_CFLAGS) $(SDL2_LIBS) -O2 -o gol_rel
 
 clean:
-	rm gol
+	rm gol_dbg gol_rel
