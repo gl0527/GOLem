@@ -92,14 +92,13 @@ uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
 
     for (int r = y_min; r <= y_max; ++r) {
         for (int c = x_min; c <= x_max; ++c) {
-            if (r == y && c == x) {
-                continue;
+            if (IsAlive(image, c, r)) {
+                ++sum;
             }
-            sum += IsAlive(image, c, r) ? 1 : 0;
         }
     }
 
-    return sum;
+    return sum - IsAlive(image, x, y);
 }
 
 bool SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
