@@ -143,14 +143,12 @@ bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const co
     for (int y = 0; y < src->h; ++y) {
         for (int x = 0; x < src->w; ++x) {
             uint8_t const alive_neighbors = GetAliveNeighborCount(src, x, y);
-            if (IsAlive(src, x, y) && (alive_neighbors < rules->stay_alive_min || alive_neighbors > rules->stay_alive_max)) {
-                if (!SetSurfacePixel(dst, x, y, colors->dead)) {
-                    return false;
-                }
-            } else if (!IsAlive(src, x, y) && alive_neighbors == rules->birth_threshold) {
-                if (!SetSurfacePixel(dst, x, y, colors->alive)) {
-                    return false;
-                }
+            bool const is_alive = IsAlive(src, x, y);
+
+            if (is_alive && (alive_neighbors < rules->stay_alive_min || alive_neighbors > rules->stay_alive_max)) {
+                SetSurfacePixel(dst, x, y, colors->dead);
+            } else if (!is_alive && alive_neighbors == rules->birth_threshold) {
+                SetSurfacePixel(dst, x, y, colors->alive);
             }
         }
     }
