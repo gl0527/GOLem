@@ -8,9 +8,10 @@
 #define MAX(i,j) (((i) > (j)) ? (i) : (j))
 
 typedef struct {
-    uint8_t stay_alive_min;
-    uint8_t stay_alive_max;
-    uint8_t birth_threshold;
+    uint8_t survive_min;
+    uint8_t survive_max;
+    uint8_t reproduction_min;
+    uint8_t reproduction_max;
 } Rules;
 
 typedef struct {
@@ -145,9 +146,9 @@ bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const co
             uint8_t const alive_neighbors = GetAliveNeighborCount(src, x, y);
             bool const is_alive = IsAlive(src, x, y);
 
-            if (is_alive && (alive_neighbors < rules->stay_alive_min || alive_neighbors > rules->stay_alive_max)) {
+            if (is_alive && (alive_neighbors < rules->survive_min || alive_neighbors > rules->survive_max)) {
                 SetSurfacePixel(dst, x, y, colors->dead);
-            } else if (!is_alive && alive_neighbors == rules->birth_threshold) {
+            } else if (!is_alive && (alive_neighbors >= rules->reproduction_min && alive_neighbors <= rules->reproduction_max)) {
                 SetSurfacePixel(dst, x, y, colors->alive);
             }
         }
@@ -225,7 +226,7 @@ int main(int argc, char **argv)
     bool quit = false;
     SDL_Event event;
     SDL_Rect rect = {0, 0, src->w, src->h};
-    Rules rules = { .stay_alive_min = 2, .stay_alive_max = 3, .birth_threshold = 3 };
+    Rules rules = { .survive_min = 2, .survive_max = 3, .reproduction_min = 3, .reproduction_max = 3 };
 
     while(!quit) {
         while(SDL_PollEvent(&event) != 0) {
