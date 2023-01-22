@@ -227,6 +227,9 @@ int main(int argc, char **argv)
     SDL_Event event;
     SDL_Rect rect = {0, 0, src->w, src->h};
     Rules rules = { .survive_min = 2, .survive_max = 3, .reproduction_min = 3, .reproduction_max = 3 };
+    SDL_Point click_offset = { 0, 0 };
+    bool in_rect = false;
+    bool left_mouse_button_down = false;
 
     while(!quit) {
         while(SDL_PollEvent(&event) != 0) {
@@ -239,17 +242,34 @@ int main(int argc, char **argv)
                         case SDLK_ESCAPE:
                             quit = true;
                             break;
-                        case SDLK_LEFT:
-                            rect.x -= 10;
+                    }
+                    break;
+                case SDL_MOUSEMOTION:
+                    if (left_mouse_button_down && in_rect) {
+                        rect.x = event.motion.x - click_offset.x;
+                        rect.y = event.motion.y - click_offset.y;
+                    }
+                    break;
+                case SDL_MOUSEBUTTONUP:
+                    switch(event.button.button) {
+                        case SDL_BUTTON_LEFT:
+                            left_mouse_button_down = false;
+                            in_rect = false;
                             break;
-                        case SDLK_RIGHT:
-                            rect.x += 10;
-                            break;
-                        case SDLK_DOWN:
-                            rect.y += 10;
-                            break;
-                        case SDLK_UP:
-                            rect.y -= 10;
+                    }
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    switch(event.button.button) {
+                        case SDL_BUTTON_LEFT:
+                            left_mouse_button_down = true;
+                            SDL_Point mouse_pos = { event.motion.x, event.motion.y };
+                            if (SDL_PointInRect(&mouse_pos, &rect)) {
+                                click_offset.x = mouse_pos.x - rect.x;
+                                click_offset.y = mouse_pos.y - rect.y;
+                                in_rect = true;
+                            } else {
+                                in_rect = false;
+                            }
                             break;
                     }
                     break;
