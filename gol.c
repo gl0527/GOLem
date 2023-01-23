@@ -179,7 +179,7 @@ int main(int argc, char **argv)
 
     App app;
 
-    if (!CreateApp("Game of Life", 640, 480, &app)) {
+    if (!CreateApp("Game of Life", 800, 600, &app)) {
         return 1;
     }
 
