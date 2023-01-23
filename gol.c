@@ -223,10 +223,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    Rules const rules = { .survive_min = 2, .survive_max = 3, .reproduction_min = 3, .reproduction_max = 3 };
+    float const zoom_factor = 1.02F;
+
     bool quit = false;
     SDL_Event event;
     SDL_Rect rect = {0, 0, src->w, src->h};
-    Rules rules = { .survive_min = 2, .survive_max = 3, .reproduction_min = 3, .reproduction_max = 3 };
     SDL_Point click_offset = { 0, 0 };
     bool in_rect = false;
     bool left_mouse_button_down = false;
@@ -273,6 +275,16 @@ int main(int argc, char **argv)
                             break;
                     }
                     break;
+                case SDL_MOUSEWHEEL: {
+                    if (event.wheel.y > 0) {
+                        rect.w *= zoom_factor;
+                        rect.h *= zoom_factor;
+                    } else {
+                        rect.w /= zoom_factor;
+                        rect.h /= zoom_factor;
+                    }
+                }
+                break;
             }
         }
 
