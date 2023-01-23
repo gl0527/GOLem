@@ -275,7 +275,7 @@ int main(int argc, char **argv)
                             break;
                     }
                     break;
-                case SDL_MOUSEWHEEL: {
+                case SDL_MOUSEWHEEL:
                     if (event.wheel.y > 0) {
                         rect.w *= zoom_factor;
                         rect.h *= zoom_factor;
@@ -283,7 +283,6 @@ int main(int argc, char **argv)
                         rect.w /= zoom_factor;
                         rect.h /= zoom_factor;
                     }
-                }
                 break;
             }
         }
