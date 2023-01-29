@@ -229,6 +229,8 @@ int main(int argc, char **argv)
     bool quit = false;
     SDL_Event event;
     SDL_Rect rect = {0, 0, src->w, src->h};
+    int const rect_start_w = rect.w;
+    int const rect_start_h = rect.h;
     SDL_Point click_offset = { 0, 0 };
     bool in_rect = false;
     bool left_mouse_button_down = false;
@@ -257,6 +259,10 @@ int main(int argc, char **argv)
                         case SDL_BUTTON_LEFT:
                             left_mouse_button_down = false;
                             in_rect = false;
+                            break;
+                        case SDL_BUTTON_MIDDLE:
+                            rect.w = rect_start_w;
+                            rect.h = rect_start_h;
                             break;
                     }
                     break;
