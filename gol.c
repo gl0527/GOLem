@@ -228,6 +228,7 @@ int main(int argc, char **argv)
 
     bool quit = false;
     SDL_Event event;
+    uint32_t delay_ms = 20;
     SDL_Rect rect = {0, 0, src->w, src->h};
     int const rect_start_w = rect.w;
     int const rect_start_h = rect.h;
@@ -307,7 +308,7 @@ int main(int argc, char **argv)
         src = dst;
         dst = tmp;
 
-        SDL_Delay(20);
+        SDL_Delay(delay_ms);
     }
     SDL_DestroyTexture(texture);
 
