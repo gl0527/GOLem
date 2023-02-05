@@ -24,6 +24,19 @@ typedef struct {
     SDL_Renderer *renderer;
 } App;
 
+typedef struct {
+    bool quit;
+    SDL_Event event;
+    uint32_t delay_ms;
+    SDL_Rect rect;
+    int const rect_start_w;
+    int const rect_start_h;
+    SDL_Point click_offset;
+    bool in_rect;
+    bool left_mouse_button_down;
+    float const zoom_factor;
+} Context;
+
 bool CreateApp(char const *title, int width, int height, App *outApp)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -170,6 +183,81 @@ void Binarize(SDL_Surface *const image, Colors const *const colors)
     }
 }
 
+void HandleInputs(Context *const ctx)
+{
+    while(SDL_PollEvent(&(ctx->event)) != 0) {
+        switch(ctx->event.type) {
+            case SDL_QUIT:
+                ctx->quit = true;
+                break;
+            case SDL_KEYDOWN:
+                switch(ctx->event.key.keysym.sym) {
+                    case SDLK_ESCAPE:
+                        ctx->quit = true;
+                        break;
+                }
+                break;
+            case SDL_MOUSEMOTION:
+                if (ctx->left_mouse_button_down && ctx->in_rect) {
+                    ctx->rect.x = ctx->event.motion.x - ctx->click_offset.x;
+                    ctx->rect.y = ctx->event.motion.y - ctx->click_offset.y;
+                }
+                break;
+            case SDL_MOUSEBUTTONUP:
+                switch(ctx->event.button.button) {
+                    case SDL_BUTTON_LEFT:
+                        ctx->left_mouse_button_down = false;
+                        ctx->in_rect = false;
+                        break;
+                    case SDL_BUTTON_MIDDLE:
+                        ctx->rect.w = ctx->rect_start_w;
+                        ctx->rect.h = ctx->rect_start_h;
+                        break;
+                }
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+                switch(ctx->event.button.button) {
+                    case SDL_BUTTON_LEFT:
+                        ctx->left_mouse_button_down = true;
+                        SDL_Point mouse_pos = { ctx->event.motion.x, ctx->event.motion.y };
+                        if (SDL_PointInRect(&mouse_pos, &(ctx->rect))) {
+                            ctx->click_offset.x = mouse_pos.x - ctx->rect.x;
+                            ctx->click_offset.y = mouse_pos.y - ctx->rect.y;
+                            ctx->in_rect = true;
+                        } else {
+                            ctx->in_rect = false;
+                        }
+                        break;
+                }
+                break;
+            case SDL_MOUSEWHEEL:
+                if (ctx->event.wheel.y > 0) {
+                    ctx->rect.w *= ctx->zoom_factor;
+                    ctx->rect.h *= ctx->zoom_factor;
+                } else {
+                    ctx->rect.w /= ctx->zoom_factor;
+                    ctx->rect.h /= ctx->zoom_factor;
+                }
+                break;
+        }
+    }
+}
+
+void Draw(SDL_Texture *const texture, SDL_Surface const *const surface, SDL_Renderer *const renderer, SDL_Rect const *const rect)
+{
+    SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
+    SDL_RenderCopy(renderer, texture, NULL, rect);
+    SDL_RenderPresent(renderer);
+    SDL_RenderClear(renderer);
+}
+
+void Swap(SDL_Surface **src, SDL_Surface **dst)
+{
+    SDL_Surface *tmp = *src;
+    *src = *dst;
+    *dst = tmp;
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2) {
@@ -224,91 +312,25 @@ int main(int argc, char **argv)
     }
 
     Rules const rules = { .survive_min = 2, .survive_max = 3, .reproduction_min = 3, .reproduction_max = 3 };
-    float const zoom_factor = 1.02F;
 
-    bool quit = false;
-    SDL_Event event;
-    uint32_t delay_ms = 20;
-    SDL_Rect rect = {0, 0, src->w, src->h};
-    int const rect_start_w = rect.w;
-    int const rect_start_h = rect.h;
-    SDL_Point click_offset = { 0, 0 };
-    bool in_rect = false;
-    bool left_mouse_button_down = false;
+    Context ctx = {
+        .quit = false,
+        .delay_ms = 20,
+        .rect = {0, 0, src->w, src->h},
+        .rect_start_w = src->w,
+        .rect_start_h = src->h,
+        .click_offset = { 0, 0 },
+        .in_rect = false,
+        .left_mouse_button_down = false,
+        .zoom_factor = 1.1F
+    };
 
-    while(!quit) {
-        while(SDL_PollEvent(&event) != 0) {
-            switch(event.type) {
-                case SDL_QUIT:
-                    quit = true;
-                    break;
-                case SDL_KEYDOWN:
-                    switch(event.key.keysym.sym) {
-                        case SDLK_ESCAPE:
-                            quit = true;
-                            break;
-                    }
-                    break;
-                case SDL_MOUSEMOTION:
-                    if (left_mouse_button_down && in_rect) {
-                        rect.x = event.motion.x - click_offset.x;
-                        rect.y = event.motion.y - click_offset.y;
-                    }
-                    break;
-                case SDL_MOUSEBUTTONUP:
-                    switch(event.button.button) {
-                        case SDL_BUTTON_LEFT:
-                            left_mouse_button_down = false;
-                            in_rect = false;
-                            break;
-                        case SDL_BUTTON_MIDDLE:
-                            rect.w = rect_start_w;
-                            rect.h = rect_start_h;
-                            break;
-                    }
-                    break;
-                case SDL_MOUSEBUTTONDOWN:
-                    switch(event.button.button) {
-                        case SDL_BUTTON_LEFT:
-                            left_mouse_button_down = true;
-                            SDL_Point mouse_pos = { event.motion.x, event.motion.y };
-                            if (SDL_PointInRect(&mouse_pos, &rect)) {
-                                click_offset.x = mouse_pos.x - rect.x;
-                                click_offset.y = mouse_pos.y - rect.y;
-                                in_rect = true;
-                            } else {
-                                in_rect = false;
-                            }
-                            break;
-                    }
-                    break;
-                case SDL_MOUSEWHEEL:
-                    if (event.wheel.y > 0) {
-                        rect.w *= zoom_factor;
-                        rect.h *= zoom_factor;
-                    } else {
-                        rect.w /= zoom_factor;
-                        rect.h /= zoom_factor;
-                    }
-                break;
-            }
-        }
-
-        if (!Step(src, dst, &colors, &rules)) {
-            break;
-        }
-
-        SDL_UpdateTexture(texture, NULL, src->pixels, src->pitch);
-
-        SDL_RenderCopy(app.renderer, texture, NULL, &rect);
-        SDL_RenderPresent(app.renderer);
-        SDL_RenderClear(app.renderer);
-
-        SDL_Surface *tmp = src;
-        src = dst;
-        dst = tmp;
-
-        SDL_Delay(delay_ms);
+    while(!ctx.quit) {
+        HandleInputs(&ctx);
+        Step(src, dst, &colors, &rules);
+        Draw(texture, src, app.renderer, &(ctx.rect));
+        Swap(&src, &dst);
+        SDL_Delay(ctx.delay_ms);
     }
     SDL_DestroyTexture(texture);
 
