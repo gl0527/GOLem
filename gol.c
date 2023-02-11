@@ -4,8 +4,11 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#define MIN(i,j) (((i) < (j)) ? (i) : (j))
-#define MAX(i,j) (((i) > (j)) ? (i) : (j))
+#ifndef NDEBUG
+#define DEBUG_LOG_STDERR(format,...) fprintf(stderr, format, __VA_ARGS__)
+#else
+#define DEBUG_LOG_STDERR(format,...)
+#endif
 
 typedef struct {
     uint8_t survive_min;
@@ -75,11 +78,11 @@ void DestroyApp(App *app)
 uint8_t IsAlive(SDL_Surface *const image, int x, int y)
 {
     if (x < 0 || x > image->w - 1) {
-        /*fprintf(stderr, "%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);*/
+        DEBUG_LOG_STDERR("%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);
         return 0;
     }
     if (y < 0 || y > image->h - 1) {
-        /*fprintf(stderr, "%s(%d):\tVertical index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->h);*/
+        DEBUG_LOG_STDERR("%s(%d):\tVertical index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->h);
         return 0;
     }
 
@@ -101,11 +104,11 @@ uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
 bool SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
 {
     if (x < 0 || x > image->w) {
-        fprintf(stderr, "%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);
+        DEBUG_LOG_STDERR("%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);
         return false;
     }
     if (y < 0 || y > image->h) {
-        fprintf(stderr, "%s(%d):\tVertical index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->h);
+        DEBUG_LOG_STDERR("%s(%d):\tVertical index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->h);
         return false;
     }
 
@@ -129,11 +132,11 @@ bool SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
 bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const colors, Rules const *const rules)
 {
     if (src->w != dst->w || src->h != dst->h) {
-        fprintf(stderr, "%s(%d):\tSurface dimensions do not match.\n", __FILE__, __LINE__);
+        DEBUG_LOG_STDERR("%s(%d):\tSurface dimensions do not match.\n", __FILE__, __LINE__);
         return false;
     }
     if (SDL_BlitSurface(src, NULL, dst, NULL) != 0) {
-        fprintf(stderr, "%s(%d):\tError @ copying surface: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        DEBUG_LOG_STDERR("%s(%d):\tError @ copying surface: %s.\n", __FILE__, __LINE__, SDL_GetError());
         return false;
     }
 
