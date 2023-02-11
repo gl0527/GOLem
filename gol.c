@@ -72,47 +72,30 @@ void DestroyApp(App *app)
     SDL_Quit();
 }
 
-bool IsAlive(SDL_Surface *const image, int x, int y)
+uint8_t IsAlive(SDL_Surface *const image, int x, int y)
 {
-    if (x < 0 || x > image->w) {
-        fprintf(stderr, "%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);
-        return false;
+    if (x < 0 || x > image->w - 1) {
+        /*fprintf(stderr, "%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);*/
+        return 0;
     }
-    if (y < 0 || y > image->h) {
-        fprintf(stderr, "%s(%d):\tVertical index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->h);
-        return false;
+    if (y < 0 || y > image->h - 1) {
+        /*fprintf(stderr, "%s(%d):\tVertical index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->h);*/
+        return 0;
     }
 
-    return *((uint8_t*)(image->pixels) + y * image->pitch + x * image->format->BytesPerPixel) > 127;
+    return *((uint8_t*)(image->pixels) + y * image->pitch + x * image->format->BytesPerPixel) > 127 ? 1 : 0;
 }
 
 uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
 {
-    if (x < 0 || x > image->w) {
-        fprintf(stderr, "%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);
-        return false;
-    }
-    if (y < 0 || y > image->h) {
-        fprintf(stderr, "%s(%d):\tVertical index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->h);
-        return false;
-    }
-
-    int const y_min = MAX(y - 1, 0);
-    int const y_max = MIN(y + 1, image->h - 1);
-    int const x_min = MAX(x - 1, 0);
-    int const x_max = MIN(x + 1, image->w - 1);
-
-    uint8_t sum = 0;
-
-    for (int r = y_min; r <= y_max; ++r) {
-        for (int c = x_min; c <= x_max; ++c) {
-            if (IsAlive(image, c, r)) {
-                ++sum;
-            }
-        }
-    }
-
-    return sum - IsAlive(image, x, y);
+    return IsAlive(image, x - 1, y - 1) +
+        IsAlive(image, x, y - 1) +
+        IsAlive(image, x + 1, y - 1) +
+        IsAlive(image, x - 1, y) +
+        IsAlive(image, x + 1, y) +
+        IsAlive(image, x - 1, y + 1) +
+        IsAlive(image, x, y + 1) +
+        IsAlive(image, x + 1, y + 1);
 }
 
 bool SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
