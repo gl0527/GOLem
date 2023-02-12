@@ -143,11 +143,11 @@ bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const co
     for (int y = 0; y < src->h; ++y) {
         for (int x = 0; x < src->w; ++x) {
             uint8_t const alive_neighbors = GetAliveNeighborCount(src, x, y);
-            bool const is_alive = IsAlive(src, x, y);
+            uint8_t const is_alive = IsAlive(src, x, y);
 
-            if (is_alive && (alive_neighbors < rules->survive_min || alive_neighbors > rules->survive_max)) {
+            if (is_alive == 1 && (alive_neighbors < rules->survive_min || alive_neighbors > rules->survive_max)) {
                 SetSurfacePixel(dst, x, y, colors->dead);
-            } else if (!is_alive && (alive_neighbors >= rules->reproduction_min && alive_neighbors <= rules->reproduction_max)) {
+            } else if (is_alive == 0 && (alive_neighbors >= rules->reproduction_min && alive_neighbors <= rules->reproduction_max)) {
                 SetSurfacePixel(dst, x, y, colors->alive);
             }
         }
@@ -160,7 +160,7 @@ void Binarize(SDL_Surface *const image, Colors const *const colors)
 {
     for (int y = 0; y < image->h; ++y) {
         for (int x = 0; x < image->w; ++x) {
-            if (IsAlive(image, x, y)) {
+            if (IsAlive(image, x, y) == 1) {
                 SetSurfacePixel(image, x, y, colors->alive);
             } else {
                 SetSurfacePixel(image, x, y, colors->dead);
