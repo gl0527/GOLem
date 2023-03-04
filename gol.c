@@ -86,7 +86,7 @@ uint8_t IsAlive(SDL_Surface *const image, int x, int y)
         return 0;
     }
 
-    // Return the first bit of the pixel value.
+    // Return the most significant bit of the pixel value.
     return ((*((uint8_t*)(image->pixels) + y * image->pitch + x * image->format->BytesPerPixel)) & 128) >> 7;
 }
 
