@@ -86,7 +86,8 @@ uint8_t IsAlive(SDL_Surface *const image, int x, int y)
         return 0;
     }
 
-    return *((uint8_t*)(image->pixels) + y * image->pitch + x * image->format->BytesPerPixel) > 127 ? 1 : 0;
+    // Return the first bit of the pixel value.
+    return ((*((uint8_t*)(image->pixels) + y * image->pitch + x * image->format->BytesPerPixel)) & 128) >> 7;
 }
 
 uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
