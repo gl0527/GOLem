@@ -10,6 +10,8 @@
 #define DEBUG_LOG_STDERR(format,...)
 #endif
 
+#define BIT(n) (1 << (n))
+
 typedef struct {
     uint8_t survive_min;
     uint8_t survive_max;
@@ -87,7 +89,7 @@ uint8_t IsAlive(SDL_Surface *const image, int x, int y)
     }
 
     // Return the most significant bit of the pixel value.
-    return ((*((uint8_t*)(image->pixels) + y * image->pitch + x * image->format->BytesPerPixel)) & 128) >> 7;
+    return ((*((uint8_t*)(image->pixels) + y * image->pitch + x * image->format->BytesPerPixel)) & BIT(7)) >> 7;
 }
 
 uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
