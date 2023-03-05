@@ -10,7 +10,7 @@
 #define DEBUG_LOG_STDERR(format,...)
 #endif
 
-#define BIT(n) (1 << (n))
+#define BIT(n) (1ULL << (n))
 
 typedef struct {
     uint8_t survive_min;
