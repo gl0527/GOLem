@@ -79,42 +79,42 @@ void DestroyApp(App *app)
 
 uint8_t IsAlive(SDL_Surface *const image, int x, int y)
 {
-    if (x < 0 || x > image->w - 1) {
-        DEBUG_LOG_STDERR("%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);
-        return 0;
-    }
-    if (y < 0 || y > image->h - 1) {
-        DEBUG_LOG_STDERR("%s(%d):\tVertical index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->h);
-        return 0;
-    }
-
     // Return the most significant bit of the pixel value.
     return ((*((uint8_t*)(image->pixels) + y * image->pitch + x * image->format->BytesPerPixel)) & BIT(7)) >> 7;
 }
 
+bool InBounds(SDL_Surface *const image, int x, int y)
+{
+    if (x < 0 || x > image->w - 1) {
+        DEBUG_LOG_STDERR("%s(%d):\tHorizontal index out of range. Valid range: [0; %d].\n", __FILE__, __LINE__, image->w - 1);
+        return false;
+    }
+    if (y < 0 || y > image->h - 1) {
+        DEBUG_LOG_STDERR("%s(%d):\tVertical index out of range. Valid range: [0; %d].\n", __FILE__, __LINE__, image->h - 1);
+        return false;
+    }
+
+    return true;
+}
+
 uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
 {
-    return IsAlive(image, x - 1, y - 1) +
-        IsAlive(image, x, y - 1) +
-        IsAlive(image, x + 1, y - 1) +
-        IsAlive(image, x - 1, y) +
-        IsAlive(image, x + 1, y) +
-        IsAlive(image, x - 1, y + 1) +
-        IsAlive(image, x, y + 1) +
-        IsAlive(image, x + 1, y + 1);
+    uint8_t sum = 0;
+
+    for (int dy = -1; dy <= 1; ++dy) {
+        for (int dx = -1; dx <= 1; ++dx) {
+            if ((dy == 0 && dx == 0) || (!InBounds(image, x + dx, y + dy))) {
+                continue;
+            }
+            sum += IsAlive(image, x + dx, y + dy);
+        }
+    }
+
+    return sum;
 }
 
 bool SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
 {
-    if (x < 0 || x > image->w) {
-        DEBUG_LOG_STDERR("%s(%d):\tHorizontal index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->w);
-        return false;
-    }
-    if (y < 0 || y > image->h) {
-        DEBUG_LOG_STDERR("%s(%d):\tVertical index is out of range. Valid range is [0; %d].\n", __FILE__, __LINE__, image->h);
-        return false;
-    }
-
     uint8_t const bytes_per_pixel = image->format->BytesPerPixel;
     uint8_t *const pixel_address = (uint8_t*)(image->pixels) + image->pitch * y + x * bytes_per_pixel;
 
