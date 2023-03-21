@@ -40,6 +40,7 @@ typedef struct {
     bool in_rect;
     bool left_mouse_button_down;
     float const zoom_factor;
+    bool is_running;
 } Context;
 
 bool CreateApp(char const *title, int width, int height, App *outApp)
@@ -179,10 +180,13 @@ void HandleInputs(Context *const ctx)
             case SDL_QUIT:
                 ctx->quit = true;
                 break;
-            case SDL_KEYDOWN:
+            case SDL_KEYUP:
                 switch(ctx->event.key.keysym.sym) {
                     case SDLK_ESCAPE:
                         ctx->quit = true;
+                        break;
+                    case SDLK_SPACE:
+                        ctx->is_running = !ctx->is_running;
                         break;
                 }
                 break;
@@ -311,14 +315,17 @@ int main(int argc, char **argv)
         .click_offset = { 0, 0 },
         .in_rect = false,
         .left_mouse_button_down = false,
-        .zoom_factor = 1.1F
+        .zoom_factor = 1.1F,
+        .is_running = false
     };
 
     while(!ctx.quit) {
         HandleInputs(&ctx);
-        Step(src, dst, &colors, &rules);
         Draw(texture, src, app.renderer, &(ctx.rect));
-        Swap(&src, &dst);
+        if (ctx.is_running) {
+            Step(src, dst, &colors, &rules);
+            Swap(&src, &dst);
+        }
         SDL_Delay(ctx.delay_ms);
     }
     SDL_DestroyTexture(texture);
