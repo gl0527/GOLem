@@ -234,10 +234,10 @@ void HandleInputs(Context *const ctx)
 
 void Draw(SDL_Texture *const texture, SDL_Surface const *const surface, SDL_Renderer *const renderer, SDL_Rect const *const rect)
 {
+    SDL_RenderClear(renderer);
     SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
     SDL_RenderCopy(renderer, texture, NULL, rect);
     SDL_RenderPresent(renderer);
-    SDL_RenderClear(renderer);
 }
 
 void Swap(SDL_Surface **src, SDL_Surface **dst)
