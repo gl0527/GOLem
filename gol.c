@@ -50,7 +50,7 @@ bool CreateApp(char const *title, int width, int height, App *outApp)
         return false;
     }
 
-    if (0 == IMG_Init(IMG_INIT_JPG)) {
+    if (0 == IMG_Init(IMG_INIT_PNG)) {
         fprintf(stderr, "%s(%d):\tError @ SDL2_Image initialization: %s.\n", __FILE__, __LINE__, IMG_GetError());
         return false;
     }
