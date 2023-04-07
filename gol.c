@@ -114,7 +114,7 @@ uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
     return sum;
 }
 
-bool SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
+void SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
 {
     uint8_t const bytes_per_pixel = image->format->BytesPerPixel;
     uint8_t *const pixel_address = (uint8_t*)(image->pixels) + image->pitch * y + x * bytes_per_pixel;
@@ -124,13 +124,7 @@ bool SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
     uint8_t const b = (color & 0x0000FF00) >> 8;
     uint8_t const a = (color & 0x000000FF);
 
-    uint32_t const real_color = SDL_MapRGBA(image->format, r, g, b, a);
-
-    SDL_LockSurface(image);
-    SDL_memset4(pixel_address, real_color, bytes_per_pixel / 4);
-    SDL_UnlockSurface(image);
-
-    return true;
+    SDL_memset4(pixel_address, SDL_MapRGBA(image->format, r, g, b, a), bytes_per_pixel / 4);
 }
 
 bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const colors, Rules const *const rules)
