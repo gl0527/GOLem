@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <omp.h>
 
 #ifndef NDEBUG
 #define DEBUG_LOG_STDERR(format,...) fprintf(stderr, format, __VA_ARGS__)
@@ -138,6 +139,11 @@ bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const co
         return false;
     }
 
+
+#pragma omp parallel for \
+    collapse(2) \
+    default(none) \
+    shared(src, dst, colors, rules)
     for (int y = 0; y < src->h; ++y) {
         for (int x = 0; x < src->w; ++x) {
             uint8_t const alive_neighbors = GetAliveNeighborCount(src, x, y);

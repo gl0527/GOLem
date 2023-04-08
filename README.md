@@ -7,6 +7,7 @@ This is a C project that simulates Game of Life on an SDL texture.
 Install the following dependencies:
 * SDL2
 * SDL2_image
+* OpenMP
 
 ## Installation
 
