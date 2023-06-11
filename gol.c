@@ -105,10 +105,9 @@ uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
 
     for (int dy = -1; dy <= 1; ++dy) {
         for (int dx = -1; dx <= 1; ++dx) {
-            if ((dy == 0 && dx == 0) || (!InBounds(image, x + dx, y + dy))) {
-                continue;
+            if ((dy != 0 || dx != 0) && (InBounds(image, x + dx, y + dy))) {
+                sum += IsAlive(image, x + dx, y + dy);
             }
-            sum += IsAlive(image, x + dx, y + dy);
         }
     }
 
