@@ -1,18 +1,35 @@
-CC=gcc
-CFLAGS=-Wall -Wextra -pedantic -pedantic-errors
-SDL2_CFLAGS=$(shell echo $$(sdl2-config --cflags))
-SDL2_LIBS=$(shell echo $$(sdl2-config --libs)) -lSDL2_image
-OPENMP_FLAGS=-fopenmp
+CC := gcc
+CFLAGS := -Wall -Wextra -pedantic -pedantic-errors
+SDL2_CFLAGS := $(shell echo $$(sdl2-config --cflags))
+SDL2_LIBS := $(shell echo $$(sdl2-config --libs)) -lSDL2_image
+OPENMP_FLAGS := -fopenmp
+BUILD_DIR := ./build
+BIN_DIR := ./bin
 
-.PHONY: all clean
+.PHONY: all debug release clean
 
-all: gol_dbg gol_rel
+all: debug release
 
-gol_dbg: gol.c
-	$(CC) $^ $(CFLAGS) $(SDL2_CFLAGS) $(SDL2_LIBS) $(OPENMP_FLAGS) -O0 -g -o $@
+debug: $(BIN_DIR)/gold $(BUILD_DIR)/gold.o
 
-gol_rel: gol.c
-	$(CC) $^ $(CFLAGS) -DNDEBUG $(SDL2_CFLAGS) $(SDL2_LIBS) $(OPENMP_FLAGS) -O2 -o $@
+release: $(BIN_DIR)/gol $(BUILD_DIR)/gol.o
+
+$(BIN_DIR)/gold: $(BUILD_DIR)/gold.o
+	@mkdir -p $(@D)
+	@$(CC) $^ $(SDL2_LIBS) $(OPENMP_FLAGS) -o $@
+
+$(BIN_DIR)/gol: $(BUILD_DIR)/gol.o
+	@mkdir -p $(@D)
+	@$(CC) $^ $(SDL2_LIBS) $(OPENMP_FLAGS) -o $@
+
+$(BUILD_DIR)/%d.o: %.c
+	@mkdir -p $(@D)
+	@$(CC) $^ $(CFLAGS) $(SDL2_CFLAGS) $(OPENMP_FLAGS) -c -O0 -g -o $@
+
+$(BUILD_DIR)/%.o: %.c
+	@mkdir -p $(@D)
+	@$(CC) $^ $(CFLAGS) -DNDEBUG $(SDL2_CFLAGS) $(OPENMP_FLAGS) -c -O2 -o $@
 
 clean:
-	rm gol_dbg gol_rel
+	@rm -rf $(BUILD_DIR)
+	@rm -rf $(BIN_DIR)
