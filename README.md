@@ -2,6 +2,9 @@
 
 This is a C project that simulates Game of Life on an SDL texture.
 
+![initial](./asset/screenshot/initial.png)
+![zoomed-out](./asset/screenshot/zoomed_out.png)
+
 ## Dependencies
 
 Install the following dependencies:
