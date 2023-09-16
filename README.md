@@ -15,6 +15,15 @@ Execute the following command on top level:
 ```sh
 $ make
 ```
+As a result, `bin/` and `build/` folders will be generated into the root of the repo, with the following content:
+```
+├── bin
+│   ├── gol
+│   └── gold
+├── build
+│   ├── gold.o
+│   └── gol.o
+```
 
 ## Usage
 
@@ -22,12 +31,12 @@ $ make
 
 To run the debug version:
 ```sh
-$ ./gol_dbg <path/to/8rgba-image>
+$ ./bin/gold <path/to/8rgba-image>
 ```
 
 To run the release version:
 ```sh
-$ ./gol_rel <path/to/8rgba-image>
+$ ./bin/gol <path/to/8rgba-image>
 ```
 
 ### Controls
