@@ -14,11 +14,7 @@ debug: $(BIN_DIR)/gold $(BUILD_DIR)/gold.o
 
 release: $(BIN_DIR)/gol $(BUILD_DIR)/gol.o
 
-$(BIN_DIR)/gold: $(BUILD_DIR)/gold.o
-	@mkdir -p $(@D)
-	@$(CC) $^ $(SDL2_LIBS) $(OPENMP_FLAGS) -o $@
-
-$(BIN_DIR)/gol: $(BUILD_DIR)/gol.o
+$(BIN_DIR)/%: $(BUILD_DIR)/%.o
 	@mkdir -p $(@D)
 	@$(CC) $^ $(SDL2_LIBS) $(OPENMP_FLAGS) -o $@
 
