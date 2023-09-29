@@ -15,9 +15,9 @@ BIN_DIR := ./bin
 
 all: debug release
 
-debug: $(BIN_DIR)/gold $(BUILD_DIR)/gold.o $(BUILD_DIR)/gold.s
+debug: $(BIN_DIR)/gold $(BUILD_DIR)/gold.o $(BUILD_DIR)/gold.s $(BUILD_DIR)/gold.i
 
-release: $(BIN_DIR)/gol $(BUILD_DIR)/gol.o $(BUILD_DIR)/gol.s
+release: $(BIN_DIR)/gol $(BUILD_DIR)/gol.o $(BUILD_DIR)/gol.s $(BUILD_DIR)/gol.i
 
 $(BIN_DIR)/%: $(BUILD_DIR)/%.o
 	@mkdir -p $(@D)
@@ -38,6 +38,14 @@ $(BUILD_DIR)/%d.s: %.c
 $(BUILD_DIR)/%.s: %.c
 	@mkdir -p $(@D)
 	@$(CC) -o $@ $^ $(RELEASE_FLAGS) -S -fverbose-asm
+
+$(BUILD_DIR)/%d.i: %.c
+	@mkdir -p $(@D)
+	@$(CC) -o $@ $^ $(DEBUG_FLAGS) -E
+
+$(BUILD_DIR)/%.i: %.c
+	@mkdir -p $(@D)
+	@$(CC) -o $@ $^ $(RELEASE_FLAGS) -E
 
 clean:
 	@rm -rf $(BUILD_DIR)
