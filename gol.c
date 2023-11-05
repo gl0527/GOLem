@@ -1,15 +1,7 @@
-#include <stdbool.h>
-#include <stdio.h>
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <omp.h>
-
-#ifndef NDEBUG
-#define DEBUG_LOG_STDERR(format,...) fprintf(stderr, format, __VA_ARGS__)
-#else
-#define DEBUG_LOG_STDERR(format,...)
-#endif
+#include <stdbool.h>
 
 #define BIT(n) (1ULL << (n))
 
@@ -47,24 +39,24 @@ typedef struct {
 bool CreateApp(char const *title, int width, int height, App *outApp)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        fprintf(stderr, "%s(%d):\tError @ SDL2 initialization: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        SDL_Log("%s(%d):\tError @ SDL2 initialization: %s.\n", __FILE__, __LINE__, SDL_GetError());
         return false;
     }
 
     if (0 == IMG_Init(IMG_INIT_PNG)) {
-        fprintf(stderr, "%s(%d):\tError @ SDL2_Image initialization: %s.\n", __FILE__, __LINE__, IMG_GetError());
+        SDL_Log("%s(%d):\tError @ SDL2_Image initialization: %s.\n", __FILE__, __LINE__, IMG_GetError());
         return false;
     }
 
     outApp->window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_RESIZABLE);
     if (NULL == outApp->window) {
-        fprintf(stderr, "%s(%d):\tError @ window creation: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        SDL_Log("%s(%d):\tError @ window creation: %s.\n", __FILE__, __LINE__, SDL_GetError());
         return false;
     }
 
     outApp->renderer = SDL_CreateRenderer(outApp->window, -1, 0);
     if (NULL == outApp->renderer) {
-        fprintf(stderr, "%s(%d):\tError @ renderer creation: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        SDL_Log("%s(%d):\tError @ renderer creation: %s.\n", __FILE__, __LINE__, SDL_GetError());
         return false;
     }
 
@@ -119,11 +111,11 @@ void SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
 bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const colors, Rules const *const rules)
 {
     if (src->w != dst->w || src->h != dst->h) {
-        DEBUG_LOG_STDERR("%s(%d):\tSurface dimensions do not match.\n", __FILE__, __LINE__);
+        SDL_Log("%s(%d):\tSurface dimensions do not match.\n", __FILE__, __LINE__);
         return false;
     }
     if (SDL_BlitSurface(src, NULL, dst, NULL) != 0) {
-        DEBUG_LOG_STDERR("%s(%d):\tError @ copying surface: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        SDL_Log("%s(%d):\tError @ copying surface: %s.\n", __FILE__, __LINE__, SDL_GetError());
         return false;
     }
 
@@ -242,7 +234,7 @@ void Swap(SDL_Surface **src, SDL_Surface **dst)
 int main(int argc, char **argv)
 {
     if (argc != 2) {
-        fprintf(stderr, "Wrong number of arguments provided! 1 argument is needed for the file path.\n");
+        SDL_Log("Wrong number of arguments provided! 1 argument is needed for the file path.\n");
         return 1;
     }
 
@@ -254,13 +246,13 @@ int main(int argc, char **argv)
 
     SDL_Surface *src = IMG_Load(argv[1]);
     if (NULL == src) {
-        fprintf(stderr, "%s(%d):\tError @ loading image: %s.\n", __FILE__, __LINE__, IMG_GetError());
+        SDL_Log("%s(%d):\tError @ loading image: %s.\n", __FILE__, __LINE__, IMG_GetError());
         return 1;
     }
 
     uint8_t const bits_per_pixel = src->format->BitsPerPixel;
     if (bits_per_pixel != 32) {
-        fprintf(stderr, "%s(%d):\tWrong image format: %d bits per pixel instead of 32.\n", __FILE__, __LINE__, bits_per_pixel);
+        SDL_Log("%s(%d):\tWrong image format: %d bits per pixel instead of 32.\n", __FILE__, __LINE__, bits_per_pixel);
         return 1;
     }
 
@@ -282,13 +274,13 @@ int main(int argc, char **argv)
 
     SDL_Surface *dst = SDL_CreateRGBSurface(SDL_SWSURFACE, src->w, src->h, src->format->BitsPerPixel, rmask, gmask, bmask, amask);
     if (NULL == dst) {
-        fprintf(stderr, "%s(%d):\tError @ creating image: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        SDL_Log("%s(%d):\tError @ creating image: %s.\n", __FILE__, __LINE__, SDL_GetError());
         return 1;
     }
 
     SDL_Texture *texture = SDL_CreateTextureFromSurface(app.renderer, src);
     if (NULL == texture) {
-        fprintf(stderr, "%s(%d):\tError @ creating texture: %s.\n", __FILE__, __LINE__, SDL_GetError());
+        SDL_Log("%s(%d):\tError @ creating texture: %s.\n", __FILE__, __LINE__, SDL_GetError());
         return 1;
     }
 
