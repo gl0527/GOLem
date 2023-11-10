@@ -81,29 +81,32 @@ static uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
 {
     uint8_t sum = 0;
 
-    if (y - 1 >= 0 && x - 1 >= 0) {
-        sum += IsAlive(image, x - 1, y - 1);
-    }
     if (y - 1 >= 0) {
+        if (x - 1 >= 0) {
+            sum += IsAlive(image, x - 1, y - 1);
+        }
         sum += IsAlive(image, x, y - 1);
+        if (x + 1 < image->w) {
+            sum += IsAlive(image, x + 1, y - 1);
+        }
     }
-    if (y - 1 >= 0 && x + 1 < image->w) {
-        sum += IsAlive(image, x + 1, y - 1);
-    }
+
     if (x - 1 >= 0) {
         sum += IsAlive(image, x - 1, y);
     }
+
     if (x + 1 < image->w) {
         sum += IsAlive(image, x + 1, y);
     }
-    if (y + 1 < image->h && x - 1 >= 0) {
-        sum += IsAlive(image, x - 1, y + 1);
-    }
+
     if (y + 1 < image->h) {
+        if (x - 1 >= 0) {
+            sum += IsAlive(image, x - 1, y + 1);
+        }
         sum += IsAlive(image, x, y + 1);
-    }
-    if (y + 1 < image->h && x + 1 < image->w) {
-        sum += IsAlive(image, x + 1, y + 1);
+        if (x + 1 < image->w) {
+            sum += IsAlive(image, x + 1, y + 1);
+        }
     }
 
     return sum;
