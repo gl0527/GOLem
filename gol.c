@@ -36,7 +36,7 @@ typedef struct {
     bool is_running;
 } Context;
 
-bool CreateApp(char const *title, int width, int height, App *outApp)
+static bool CreateApp(char const *title, int width, int height, App *outApp)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_Log("%s(%d):\tError @ SDL2 initialization: %s.\n", __FILE__, __LINE__, SDL_GetError());
@@ -63,7 +63,7 @@ bool CreateApp(char const *title, int width, int height, App *outApp)
     return true;
 }
 
-void DestroyApp(App *app)
+static void DestroyApp(App *app)
 {
     SDL_DestroyRenderer(app->renderer);
     SDL_DestroyWindow(app->window);
@@ -71,13 +71,13 @@ void DestroyApp(App *app)
     SDL_Quit();
 }
 
-uint8_t IsAlive(SDL_Surface *const image, int x, int y)
+static inline uint8_t IsAlive(SDL_Surface *const image, int x, int y)
 {
     // Return the most significant bit of the pixel value.
     return ((*((uint8_t*)(image->pixels) + y * image->pitch + x * image->format->BytesPerPixel)) & BIT(7)) >> 7;
 }
 
-uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
+static uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
 {
     uint8_t sum = 0;
 
@@ -109,7 +109,7 @@ uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
     return sum;
 }
 
-void SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
+static void SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
 {
     uint8_t const bytes_per_pixel = image->format->BytesPerPixel;
     uint8_t *const pixel_address = (uint8_t*)(image->pixels) + image->pitch * y + x * bytes_per_pixel;
@@ -122,7 +122,7 @@ void SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
     SDL_memset4(pixel_address, SDL_MapRGBA(image->format, r, g, b, a), bytes_per_pixel / 4);
 }
 
-bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const colors, Rules const *const rules)
+static bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const colors, Rules const *const rules)
 {
     if (src->w != dst->w || src->h != dst->h) {
         SDL_Log("%s(%d):\tSurface dimensions do not match.\n", __FILE__, __LINE__);
@@ -154,7 +154,7 @@ bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const co
     return true;
 }
 
-void Binarize(SDL_Surface *const image, Colors const *const colors)
+static void Binarize(SDL_Surface *const image, Colors const *const colors)
 {
     for (int y = 0; y < image->h; ++y) {
         for (int x = 0; x < image->w; ++x) {
@@ -167,7 +167,7 @@ void Binarize(SDL_Surface *const image, Colors const *const colors)
     }
 }
 
-void HandleInputs(Context *const ctx)
+static void HandleInputs(Context *const ctx)
 {
     while(SDL_PollEvent(&(ctx->event)) != 0) {
         switch(ctx->event.type) {
@@ -230,7 +230,7 @@ void HandleInputs(Context *const ctx)
     }
 }
 
-void Draw(SDL_Texture *const texture, SDL_Surface const *const surface, SDL_Renderer *const renderer, SDL_Rect const *const rect)
+static void Draw(SDL_Texture *const texture, SDL_Surface const *const surface, SDL_Renderer *const renderer, SDL_Rect const *const rect)
 {
     SDL_RenderClear(renderer);
     SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
@@ -238,7 +238,7 @@ void Draw(SDL_Texture *const texture, SDL_Surface const *const surface, SDL_Rend
     SDL_RenderPresent(renderer);
 }
 
-void Swap(SDL_Surface **src, SDL_Surface **dst)
+static void Swap(SDL_Surface **src, SDL_Surface **dst)
 {
     SDL_Surface *tmp = *src;
     *src = *dst;
