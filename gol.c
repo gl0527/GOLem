@@ -127,7 +127,10 @@ static void SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t col
 
 static bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const colors, Rules const *const rules)
 {
-    if (src->w != dst->w || src->h != dst->h) {
+    int const src_height = src->h;
+    int const src_width = src->w;
+
+    if (src_width != dst->w || src_height != dst->h) {
         SDL_Log("%s(%d):\tSurface dimensions do not match.\n", __FILE__, __LINE__);
         return false;
     }
@@ -136,13 +139,12 @@ static bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *c
         return false;
     }
 
-
 #pragma omp parallel for \
     collapse(2) \
     default(none) \
-    shared(src, dst, colors, rules)
-    for (int y = 0; y < src->h; ++y) {
-        for (int x = 0; x < src->w; ++x) {
+    shared(src, dst, colors, rules, src_height, src_width)
+    for (int y = 0; y < src_height; ++y) {
+        for (int x = 0; x < src_width; ++x) {
             uint8_t const alive_neighbors = GetAliveNeighborCount(src, x, y);
             uint8_t const is_alive = IsAlive(src, x, y);
 
