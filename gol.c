@@ -79,37 +79,17 @@ static inline uint8_t IsAlive(SDL_Surface *const image, int x, int y)
 
 static uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
 {
-    uint8_t sum = 0;
+    int const w = image->w;
+    int const h = image->h;
 
-    if (y - 1 >= 0) {
-        if (x - 1 >= 0) {
-            sum += IsAlive(image, x - 1, y - 1);
-        }
-        sum += IsAlive(image, x, y - 1);
-        if (x + 1 < image->w) {
-            sum += IsAlive(image, x + 1, y - 1);
-        }
-    }
+    int const left = (x - 1 + w) % w;
+    int const right = (x + 1) % w;
+    int const top = (y - 1 + h) % h;
+    int const bottom = (y + 1) % h;
 
-    if (x - 1 >= 0) {
-        sum += IsAlive(image, x - 1, y);
-    }
-
-    if (x + 1 < image->w) {
-        sum += IsAlive(image, x + 1, y);
-    }
-
-    if (y + 1 < image->h) {
-        if (x - 1 >= 0) {
-            sum += IsAlive(image, x - 1, y + 1);
-        }
-        sum += IsAlive(image, x, y + 1);
-        if (x + 1 < image->w) {
-            sum += IsAlive(image, x + 1, y + 1);
-        }
-    }
-
-    return sum;
+    return IsAlive(image, left, top) + IsAlive(image, x, top) + IsAlive(image, right, top) +
+        IsAlive(image, left, y) + IsAlive(image, right, y) +
+        IsAlive(image, left, bottom) + IsAlive(image, x, bottom) + IsAlive(image, right, bottom);
 }
 
 static void SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
