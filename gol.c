@@ -71,10 +71,15 @@ static void DestroyApp(App *app)
     SDL_Quit();
 }
 
+static inline uint8_t* GetPixelAddress(SDL_Surface const *const image, int x, int y)
+{
+    return (uint8_t*)(image->pixels) + y * image->pitch + x * image->format->BytesPerPixel;
+}
+
 static inline uint8_t IsAlive(SDL_Surface *const image, int x, int y)
 {
     // Return the most significant bit of the pixel value.
-    return ((*((uint8_t*)(image->pixels) + y * image->pitch + x * image->format->BytesPerPixel)) & BIT(7)) >> 7;
+    return ((*GetPixelAddress(image, x, y)) & BIT(7)) >> 7;
 }
 
 static uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
@@ -95,14 +100,13 @@ static uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
 static void SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
 {
     uint8_t const bytes_per_pixel = image->format->BytesPerPixel;
-    uint8_t *const pixel_address = (uint8_t*)(image->pixels) + image->pitch * y + x * bytes_per_pixel;
 
     uint8_t const r = (color & 0xFF000000) >> 24;
     uint8_t const g = (color & 0x00FF0000) >> 16;
     uint8_t const b = (color & 0x0000FF00) >> 8;
     uint8_t const a = (color & 0x000000FF);
 
-    SDL_memset4(pixel_address, SDL_MapRGBA(image->format, r, g, b, a), bytes_per_pixel / 4);
+    SDL_memset4(GetPixelAddress(image, x, y), SDL_MapRGBA(image->format, r, g, b, a), bytes_per_pixel / 4);
 }
 
 static bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const colors, Rules const *const rules)
