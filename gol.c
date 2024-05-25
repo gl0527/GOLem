@@ -17,13 +17,19 @@ typedef struct {
     uint32_t dead;
 } Colors;
 
+typedef enum {
+    QUIT,
+    BUSY,
+    IDLE,
+} AppState;
+
 typedef struct {
     SDL_Window *window;
     SDL_Renderer *renderer;
+    AppState state;
 } App;
 
 typedef struct {
-    bool quit;
     SDL_Event event;
     uint32_t delay_ms;
     SDL_Rect rect;
@@ -33,7 +39,6 @@ typedef struct {
     bool in_rect;
     bool left_mouse_button_down;
     float const zoom_factor;
-    bool is_running;
 } Context;
 
 static bool CreateApp(char const *title, int width, int height, App *outApp)
@@ -59,6 +64,8 @@ static bool CreateApp(char const *title, int width, int height, App *outApp)
         SDL_Log("%s(%d):\tError @ renderer creation: %s.\n", __FILE__, __LINE__, SDL_GetError());
         return false;
     }
+
+    outApp->state = IDLE;
 
     return true;
 }
@@ -156,20 +163,25 @@ static void Binarize(SDL_Surface *const image, Colors const *const colors)
     }
 }
 
-static void HandleInputs(Context *const ctx)
+static void HandleInputs(Context *const ctx, AppState *const app_state)
 {
     while(SDL_PollEvent(&(ctx->event)) != 0) {
         switch(ctx->event.type) {
             case SDL_QUIT:
-                ctx->quit = true;
+                *app_state = QUIT;
                 break;
             case SDL_KEYUP:
                 switch(ctx->event.key.keysym.sym) {
                     case SDLK_ESCAPE:
-                        ctx->quit = true;
+                        *app_state = QUIT;
                         break;
                     case SDLK_SPACE:
-                        ctx->is_running = !ctx->is_running;
+                        switch(*app_state)
+                        {
+                            case BUSY: *app_state = IDLE; break;
+                            case IDLE: *app_state = BUSY; break;
+                            case QUIT: break;
+                        }
                         break;
                 }
                 break;
@@ -290,7 +302,6 @@ int main(int argc, char **argv)
     Rules const rules = { .survive_min = 2, .survive_max = 3, .reproduction_min = 3, .reproduction_max = 3 };
 
     Context ctx = {
-        .quit = false,
         .delay_ms = 20,
         .rect = {0, 0, src->w, src->h},
         .rect_start_w = src->w,
@@ -298,14 +309,13 @@ int main(int argc, char **argv)
         .click_offset = { 0, 0 },
         .in_rect = false,
         .left_mouse_button_down = false,
-        .zoom_factor = 1.1F,
-        .is_running = false
+        .zoom_factor = 1.1F
     };
 
-    while(!ctx.quit) {
-        HandleInputs(&ctx);
+    while(app.state != QUIT) {
+        HandleInputs(&ctx, &(app.state));
         Draw(texture, src, app.renderer, &(ctx.rect));
-        if (ctx.is_running) {
+        if (app.state == BUSY) {
             Step(src, dst, &colors, &rules);
             Swap(&src, &dst);
         }
