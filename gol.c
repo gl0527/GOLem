@@ -14,7 +14,8 @@ typedef struct {
 
 typedef struct {
     uint32_t alive;
-    uint32_t dead;
+    uint32_t initial_dead;
+    uint32_t computed_dead;
 } Colors;
 
 typedef enum {
@@ -140,7 +141,7 @@ static bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *c
             uint8_t const is_alive = IsAlive(src, x, y);
 
             if (is_alive == 1 && (alive_neighbors < rules->survive_min || alive_neighbors > rules->survive_max)) {
-                SetSurfacePixel(dst, x, y, colors->dead);
+                SetSurfacePixel(dst, x, y, colors->computed_dead);
             } else if (is_alive == 0 && (alive_neighbors >= rules->reproduction_min && alive_neighbors <= rules->reproduction_max)) {
                 SetSurfacePixel(dst, x, y, colors->alive);
             }
@@ -157,7 +158,7 @@ static void Binarize(SDL_Surface *const image, Colors const *const colors)
             if (IsAlive(image, x, y) == 1) {
                 SetSurfacePixel(image, x, y, colors->alive);
             } else {
-                SetSurfacePixel(image, x, y, colors->dead);
+                SetSurfacePixel(image, x, y, colors->initial_dead);
             }
         }
     }
@@ -271,7 +272,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    Colors colors = { .alive = 0xFFFF00FF, .dead = 0x121212FF };
+    Colors colors = { .alive = 0xFFFF00FF, .initial_dead = 0x007272FF, .computed_dead = 0x720072FF };
 
     Binarize(src, &colors);
 
