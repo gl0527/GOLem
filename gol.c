@@ -272,7 +272,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    Colors colors = { .alive = 0xFFFF00FF, .initial_dead = 0x007272FF, .computed_dead = 0x720072FF };
+    Colors colors = { .alive = 0xFFFF00FF, .initial_dead = 0x400040FF, .computed_dead = 0x006060FF };
 
     Binarize(src, &colors);
 
