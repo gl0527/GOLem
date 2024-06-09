@@ -39,7 +39,6 @@ typedef struct {
     SDL_Point click_offset;
     bool in_rect;
     bool left_mouse_button_down;
-    float const zoom_factor;
 } Context;
 
 static bool CreateApp(char const *title, int width, int height, App *outApp)
@@ -221,11 +220,15 @@ static void HandleInputs(Context *const ctx, AppState *const app_state)
                 break;
             case SDL_MOUSEWHEEL:
                 if (ctx->event.wheel.y > 0) {
-                    ctx->rect.w *= ctx->zoom_factor;
-                    ctx->rect.h *= ctx->zoom_factor;
+                    if (ctx->rect.w < 50 * ctx->rect_start_w) {
+                        ctx->rect.w += ctx->rect_start_w;
+                        ctx->rect.h += ctx->rect_start_h;
+                    }
                 } else {
-                    ctx->rect.w /= ctx->zoom_factor;
-                    ctx->rect.h /= ctx->zoom_factor;
+                    if (ctx->rect.w > ctx->rect_start_w) {
+                        ctx->rect.w -= ctx->rect_start_w;
+                        ctx->rect.h -= ctx->rect_start_h;
+                    }
                 }
                 break;
         }
@@ -310,7 +313,6 @@ int main(int argc, char **argv)
         .click_offset = { 0, 0 },
         .in_rect = false,
         .left_mouse_button_down = false,
-        .zoom_factor = 1.1F
     };
 
     while(app.state != QUIT) {
