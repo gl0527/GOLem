@@ -12,10 +12,21 @@ typedef struct {
     uint8_t reproduction_max;
 } Rules;
 
+typedef union {
+    uint32_t rgba;
+    struct {
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        uint8_t r, g, b, a;
+#else
+        uint8_t a, b, g, r;
+#endif
+    };
+} Color;
+
 typedef struct {
-    uint32_t alive;
-    uint32_t initial_dead;
-    uint32_t computed_dead;
+    Color alive;
+    Color initial_dead;
+    Color computed_dead;
 } Colors;
 
 typedef enum {
@@ -104,16 +115,10 @@ static uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
         IsAlive(image, left, bottom) + IsAlive(image, x, bottom) + IsAlive(image, right, bottom);
 }
 
-static void SetSurfacePixel(SDL_Surface *const image, int x, int y, uint32_t color)
+static void SetSurfacePixel(SDL_Surface *const image, int x, int y, Color color)
 {
     uint8_t const bytes_per_pixel = image->format->BytesPerPixel;
-
-    uint8_t const r = (color & 0xFF000000) >> 24;
-    uint8_t const g = (color & 0x00FF0000) >> 16;
-    uint8_t const b = (color & 0x0000FF00) >> 8;
-    uint8_t const a = (color & 0x000000FF);
-
-    SDL_memset4(GetPixelAddress(image, x, y), SDL_MapRGBA(image->format, r, g, b, a), bytes_per_pixel / 4);
+    SDL_memset4(GetPixelAddress(image, x, y), SDL_MapRGBA(image->format, color.r, color.g, color.b, color.a), bytes_per_pixel / 4);
 }
 
 static bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const colors, Rules const *const rules)
@@ -275,7 +280,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    Colors colors = { .alive = 0xFFFF00FF, .initial_dead = 0x400040FF, .computed_dead = 0x006060FF };
+    Colors colors = { .alive = {.rgba = 0xFFFF00FF}, .initial_dead = {.rgba = 0x400040FF }, .computed_dead = {.rgba = 0x006060FF} };
 
     Binarize(src, &colors);
 
