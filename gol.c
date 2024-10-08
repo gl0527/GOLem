@@ -117,8 +117,9 @@ static uint8_t GetAliveNeighborCount(SDL_Surface *const image, int x, int y)
 
 static void SetSurfacePixel(SDL_Surface *const image, int x, int y, Color color)
 {
-    uint8_t const bytes_per_pixel = image->format->BytesPerPixel;
-    SDL_memset4(GetPixelAddress(image, x, y), SDL_MapRGBA(image->format, color.r, color.g, color.b, color.a), bytes_per_pixel / 4);
+    SDL_memset4(GetPixelAddress(image, x, y),
+                SDL_MapRGBA(image->format, color.r, color.g, color.b, color.a),
+                image->format->BytesPerPixel / 4);
 }
 
 static bool Step(SDL_Surface *const src, SDL_Surface *const dst, Colors const *const colors, Rules const *const rules)
